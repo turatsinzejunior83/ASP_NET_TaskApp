@@ -1,0 +1,94 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-container">
+    <div class="welcome-section">
+        <h1>Welcome to TasksApp</h1>
+        <p>Manage your tasks efficiently with categories and tags</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-number" id="totalTasks">0</div>
+            <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-number" id="completedTasks">0</div>
+            <div class="stat-label">Completed Tasks</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-number" id="pendingTasks">0</div>
+            <div class="stat-label">Pending Tasks</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📂</div>
+            <div class="stat-number" id="totalCategories">0</div>
+            <div class="stat-label">Categories</div>
+        </div>
+    </div>
+
+    <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+            <a href="/TaskItems/Create" class="btn btn-primary">+ Create New Task</a>
+            <a href="/Categories/Create" class="btn btn-secondary">+ Create Category</a>
+            <a href="/TaskItems" class="btn btn-info">View All Tasks</a>
+        </div>
+    </div>
+
+    <div class="recent-tasks">
+        <h2>Recent Tasks</h2>
+        <div class="task-list" id="recentTasks">
+            <p>Loading tasks...</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Fetch statistics from the server
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/Home/GetDashboardData');
+                const data = await response.json();
+
+                document.getElementById('totalTasks').textContent = data.totalTasks;
+                document.getElementById('completedTasks').textContent = data.completedTasks;
+                document.getElementById('pendingTasks').textContent = data.pendingTasks;
+                document.getElementById('totalCategories').textContent = data.totalCategories;
+
+                // Display recent tasks
+                const recentTasksHtml = data.recentTasks.map(task => `
+                    <div class="task-item ${task.isCompleted ? 'completed' : ''}">
+                        <div class="task-info">
+                            <h4>${task.title}</h4>
+                            <p>${task.description || 'No description'}</p>
+                            <div class="task-meta">
+                                <span class="priority priority-${task.priority}">
+                                    ${task.priority === 1 ? 'Low' : task.priority === 2 ? 'Medium' : 'High'}
+                                </span>
+                                <span class="due-date">Due: ${task.dueDate || 'No due date'}</span>
+                                ${task.category ? <span class="category">📁 ${task.category}</span> : ''}
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            ${!task.isCompleted ? <a href="/TaskItems/MarkComplete/${task.id}" class="btn-complete">✓ Complete</a> : ''}
+                            <a href="/TaskItems/Edit/${task.id}" class="btn-edit">✎ Edit</a>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('recentTasks').innerHTML = recentTasksHtml || '<p>No tasks yet. Create your first task!</p>';
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                document.getElementById('recentTasks').innerHTML = '<p>Error loading tasks</p>';
+            }
+        }
+
+        loadDashboardData();
+    </script>
+}

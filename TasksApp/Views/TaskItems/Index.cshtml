@@ -1,0 +1,108 @@
+﻿@model IEnumerable<TasksApp.Models.TaskItem>
+
+@{
+    ViewData["Title"] = "My Tasks";
+}
+
+<div class="page-header">
+    <h1>My Tasks</h1>
+    <a href="/TaskItems/Create" class="btn btn-primary">+ Create New Task</a>
+</div>
+
+<div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">All Tasks</button>
+    <button class="filter-btn" data-filter="pending">Pending</button>
+    <button class="filter-btn" data-filter="completed">Completed</button>
+    <button class="filter-btn" data-filter="high">High Priority</button>
+</div>
+
+<div class="tasks-container">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No tasks yet</h3>
+            <p>Create your first task to get started</p>
+            <a href="/TaskItems/Create" class="btn btn-primary">Create Task</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var item in Model)
+        {
+            <div class="task-card @(item.IsCompleted ? "completed" : "")" data-status="@(item.IsCompleted ? "completed" : "pending")" data-priority="@item.Priority">
+                <div class="task-header">
+                    <h3>@Html.DisplayFor(modelItem => item.Title)</h3>
+                    <div class="priority-badge priority-@item.Priority">
+                        @if (item.Priority == 1)
+                        {
+                            <span>Low Priority</span>
+                        }
+                        else if (item.Priority == 2)
+                        {
+                            <span>Medium Priority</span>
+                        }
+                        else
+                        {
+                            <span>High Priority</span>
+                        }
+                    </div>
+                </div>
+
+                <p class="task-description">@Html.DisplayFor(modelItem => item.Description)</p>
+
+                <div class="task-meta">
+                    @if (item.Category != null)
+                    {
+                        <span class="category-badge">📁 @item.Category.Name</span>
+                    }
+                    @if (item.DueDate.HasValue)
+                    {
+                        <span class="due-date">📅 Due: @item.DueDate.Value.ToString("MMM dd, yyyy")</span>
+                    }
+                    <span class="created-date">🕒 Created: @item.CreatedAt.ToString("MMM dd, yyyy")</span>
+                </div>
+
+                <div class="task-actions">
+                    @if (!item.IsCompleted)
+                    {
+                        <a href="/TaskItems/MarkComplete/@item.Id" class="btn-complete">✓ Mark Complete</a>
+                    }
+                    <a href="/TaskItems/Edit/@item.Id" class="btn-edit">✎ Edit</a>
+                    <a href="/TaskItems/Details/@item.Id" class="btn-details">👁️ Details</a>
+                    <a href="/TaskItems/Delete/@item.Id" class="btn-delete">🗑️ Delete</a>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Filter functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const taskCards = document.querySelectorAll('.task-card');
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active button
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.dataset.filter;
+
+                taskCards.forEach(card => {
+                    if (filter === 'all') {
+                        card.style.display = 'block';
+                    } else if (filter === 'pending') {
+                        card.style.display = card.dataset.status === 'pending' ? 'block' : 'none';
+                    } else if (filter === 'completed') {
+                        card.style.display = card.dataset.status === 'completed' ? 'block' : 'none';
+                    } else if (filter === 'high') {
+                        card.style.display = card.dataset.priority === '3' ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+    </script>
+}

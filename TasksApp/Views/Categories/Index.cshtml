@@ -1,0 +1,43 @@
+﻿@model IEnumerable<TasksApp.Models.Category>
+
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="page-header">
+    <h1>Categories</h1>
+    <a href="/Categories/Create" class="btn btn-primary">+ Create Category</a>
+</div>
+
+<div class="categories-grid">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📂</div>
+            <h3>No categories yet</h3>
+            <p>Create categories to organize your tasks</p>
+            <a href="/Categories/Create" class="btn btn-primary">Create Category</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var item in Model)
+        {
+            <div class="category-card">
+                <div class="category-header">
+                    <h3>@Html.DisplayFor(modelItem => item.Name)</h3>
+                    <div class="category-actions">
+                        <a href="/Categories/Edit/@item.Id" class="btn-icon" title="Edit">✎</a>
+                        <a href="/Categories/Delete/@item.Id" class="btn-icon" title="Delete">🗑️</a>
+                    </div>
+                </div>
+                <p class="category-description">@Html.DisplayFor(modelItem => item.Description)</p>
+                <div class="category-footer">
+                    <span class="task-count">📋 @(item.Tasks?.Count ?? 0) tasks</span>
+                    <span class="created-date">Created: @item.CreatedAt.ToString("MMM dd, yyyy")</span>
+                </div>
+                <a href="/Categories/Details/@item.Id" class="category-link">View Details →</a>
+            </div>
+        }
+    }
+</div>
